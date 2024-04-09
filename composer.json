@@ -1,0 +1,40 @@
+{
+  "name": "humbrain/framework",
+  "description": "A simple PHP framework",
+  "keywords": [
+    "php",
+    "framework"
+  ],
+  "license": "MIT",
+  "version": "2.0.0",
+  "type": "library",
+  "autoload": {
+    "psr-4": {
+      "Humbrain\\Framework\\": "src/",
+      "Tests\\": "tests/"
+    }
+  },
+  "authors": [
+    {
+      "name": "steodec",
+      "email": "paul.tedesco@humbrain.com"
+    }
+  ],
+  "minimum-stability": "stable",
+  "prefer-stable": false,
+  "scripts": {
+    "test": "phpunit --color"
+  },
+  "require": {
+    "http-interop/response-sender": "^1.0",
+    "guzzlehttp/guzzle": "7.7.*",
+    "altorouter/altorouter": "^2.0",
+    "twig/twig": "^3.7",
+    "php-di/php-di": "^7.0",
+    "pagerfanta/pagerfanta": "^4.2",
+    "ext-pdo": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.2.4"
+  }
+}
