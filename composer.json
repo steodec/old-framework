@@ -1,13 +1,24 @@
 {
-  "name": "humbrain/oldframework",
-  "description": "A simple PHP framework",
-  "keywords": [
-    "php",
-    "framework"
-  ],
-  "license": "MIT",
-  "version": "2.0.0",
+  "name": "humbrain/framework",
+  "description": "Framework PHP for intern project",
   "type": "library",
+  "version": "1.0.0",
+  "require": {
+    "php": "8.*",
+    "php-di/php-di": "^7.0.2",
+    "guzzlehttp/psr7": "^2.4.4",
+    "squizlabs/php_codesniffer": "^3.4.0",
+    "twig/twig": "^v3.1.0",
+    "vlucas/phpdotenv": "^v3.6.10",
+    "filp/whoops": "^2.15.1",
+    "altorouter/altorouter": "^2.0",
+    "ext-pdo": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.0.16",
+    "fakerphp/faker": "^v1.21.0"
+  },
+  "license": "Apache-2.0",
   "autoload": {
     "psr-4": {
       "Humbrain\\Framework\\": "src/",
@@ -16,25 +27,9 @@
   },
   "authors": [
     {
-      "name": "steodec",
+      "name": "Paul TEDESCO",
       "email": "paul.tedesco@humbrain.com"
     }
   ],
-  "minimum-stability": "stable",
-  "prefer-stable": false,
-  "scripts": {
-    "test": "phpunit --color"
-  },
-  "require": {
-    "http-interop/response-sender": "^1.0",
-    "guzzlehttp/guzzle": "7.7.*",
-    "altorouter/altorouter": "^2.0",
-    "twig/twig": "^3.7",
-    "php-di/php-di": "^7.0",
-    "pagerfanta/pagerfanta": "^4.2",
-    "ext-pdo": "*"
-  },
-  "require-dev": {
-    "phpunit/phpunit": "^10.2.4"
-  }
+  "minimum-stability": "stable"
 }

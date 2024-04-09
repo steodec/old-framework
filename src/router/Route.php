@@ -1,50 +1,84 @@
 <?php
+/**
+ * Copyright (c) 2023.
+ * Humbrain All right reserved.
+ **/
 
 namespace Humbrain\Framework\router;
 
+use DI\Attribute\Inject;
+use DI\Container;
+use Psr\Container\ContainerInterface;
+
 /**
- * Class Route
- * @package Humbrain\Framework\router
- * Objet to define a route
+ * @author  Paul Tedesco <paul.tedesco@humbrain.com>
+ * @version Release: 1.0.0
  */
 class Route
 {
-    private string $name;
-    /** @var callable|string */
+    private string $path;
+    /**
+     * @var array|callable
+     */
     private mixed $callback;
-    private array $parameters;
+    /**
+     * @var string[]
+     */
+    private array $params;
 
-    public function __construct(string $name, string|callable $callback, array $parameters)
+    /**
+     * @param Method $method
+     * @param string $path
+     * @param callable|string $callback
+     */
+    public function __construct(string $path, callable|array $callback, array $params = [])
     {
-        $this->name = $name;
+        $this->path = $path;
         $this->callback = $callback;
-        $this->parameters = $parameters;
+        $this->params = $params;
     }
 
     /**
-     * Get the route name
      * @return string
      */
-    public function getName(): string
+    final public function getPath(): string
     {
-        return $this->name;
+        return $this->path;
     }
 
     /**
-     * Get the callback
-     * @return callable|string
+     * @param string $path
+     * @return Route
      */
-    public function getCallback(): callable|string
+    final public function setPath(string $path): Route
+    {
+        $this->path = $path;
+        return $this;
+    }
+
+    /**
+     * @return callable|array
+     */
+    final public function getCallback(): callable|array
     {
         return $this->callback;
     }
 
     /**
-     * Get the URL parameters
-     * @return string[]
+     * @param callable|string $callback
+     * @return Route
+     */
+    public function setCallback(callable|array $callback): Route
+    {
+        $this->callback = $callback;
+        return $this;
+    }
+
+    /**
+     * @return array
      */
     public function getParams(): array
     {
-        return $this->parameters;
+        return $this->params;
     }
 }

@@ -1,129 +1,106 @@
 <?php
+/**
+ * Copyright (c) 2023.
+ * Humbrain All right reserved.
+ **/
 
 namespace Humbrain\Framework\router;
 
 use AltoRouter;
-use App\modules\Blog\Actions\PostCrudAction;
+use DI\Container;
 use Exception;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use ReflectionClass;
+use ReflectionException;
+use Humbrain\Framework\router\attributes\Route as attribute;
 
 /**
- * Class Router
- * @package Humbrain\Framework\router
- * Router to manage routes
+ * @author  Paul Tedesco <paul.tedesco@humbrain.com>
+ * @version Release: 1.0.0
  */
 class Router
 {
+    /**
+     * @var AltoRouter
+     */
     private AltoRouter $router;
+    private ContainerInterface $container;
 
     public function __construct()
     {
         $this->router = new AltoRouter();
-        $this->router->addMatchTypes([
-            "s" => "[a-z\-0-9]+"
-        ]);
-    }
-
-    /**
-     * @param string $path
-     * @param string|callable $callable $callable
-     * @param string|null $name
-     * @return void
-     */
-    public function put(string $path, string|callable $callable, ?string $name = null): void
-    {
-        $this->add('PUT', $path, $callable, $name);
-    }
-
-    /**
-     * @param string $method
-     * @param string $path
-     * @param string|callable $callback
-     * @param string|null $name
-     * @return void
-     */
-    public function add(string $method, string $path, string|callable $callback, ?string $name = null): void
-    {
-        try {
-            $this->router->addRoutes([[$method, $path, $callback, $name]]);
-        } catch (Exception $e) {
-            return;
-        }
     }
 
     /**
      * @param ServerRequestInterface $request
      * @return Route|null
      */
-    public function match(ServerRequestInterface $request): Route|null
+    final public function match(ServerRequestInterface $request): ?Route
     {
-        $result = $this->router->match($request->getUri()->getPath(), $request->getMethod());
-        if ($result === false) :
-            return null;
+        $routes = $this->router->match($request->getUri()->getPath(), $request->getMethod());
+        if ($routes) :
+            return new Route(
+                $routes['name'],
+                $routes['target'],
+                $routes['params']
+            );
         endif;
-        return new Route($result['name'] ?? '', $result['target'], $result['params']);
+        return null;
     }
 
     /**
-     * @param string $prefix
-     * @param string $callable
      * @param string $name
-     * @return void
+     * @param array $params
+     * @return string|null
      */
-    public function crud(string $prefix, string $callable, string $name): void
-    {
-        $this->get($prefix . '', $callable, $name . '.index');
-        $this->get($prefix . '/[i:id]', $callable, $name . '.edit');
-        $this->put($prefix . '/[i:id]', $callable);
-        $this->get($prefix . '/new', $callable, $name . '.create');
-        $this->post($prefix . '/new', $callable);
-        $this->delete($prefix . '/[i:id]', $callable, $name . '.delete');
-    }
-
-    /**
-     * @param string $path
-     * @param string|callable $callable
-     * @param string $name
-     * @return void
-     */
-    public function get(string $path, string|callable $callable, string $name): void
-    {
-        $this->add('GET', $path, $callable, $name);
-    }
-
-    /**
-     * @param string $path
-     * @param string|callable $callable $callable
-     * @param string|null $name
-     * @return void
-     */
-    public function post(string $path, string|callable $callable, ?string $name = null): void
-    {
-        $this->add('POST', $path, $callable, $name);
-    }
-
-    /**
-     * @param string $path
-     * @param string|callable $callable $callable
-     * @param string|null $name
-     * @return void
-     */
-    public function delete(string $path, string|callable $callable, ?string $name = null): void
-    {
-        $this->add('DELETE', $path, $callable, $name);
-    }
-
-    public function generateUri(string $string, ?array $array = [], ?array $queryParams = []): ?string
+    final public function generateUri(string $name, array $params = []): ?string
     {
         try {
-            $uri = $this->router->generate($string, $array);
-            if (!empty($queryParams)) :
-                return $uri . '?' . http_build_query($queryParams);
-            else :
-                return $uri;
-            endif;
-        } catch (Exception $e) {
+            return $this->router->generate($name, $params);
+        } catch (Exception) {
             return null;
         }
+    }
+
+    /**
+     * @param string[] $controllers
+     * @return void
+     * @throws ReflectionException
+     */
+    final public function registerAll(array $controllers): void
+    {
+        foreach ($controllers as $controller) :
+            $this->register($controller);
+        endforeach;
+    }
+
+    /**
+     * @param string $controller
+     * @return void
+     * @throws ReflectionException
+     * @throws Exception
+     */
+    final public function register(string $controller): void
+    {
+        $reflectionController = new ReflectionClass($controller);
+        foreach ($reflectionController->getMethods() as $method) :
+            $attributes = $method->getAttributes(attribute::class);
+            foreach ($attributes as $attribute) :
+                $route = $attribute->newInstance();
+                if (!$route instanceof attribute) {
+                    continue;
+                }
+                $controllerName = explode('\\', $controller);
+                $controllerName = strtolower(end($controllerName));
+                $name = $controllerName . '.' . $method->getName();
+                $this->router->map(
+                    $route->method->value,
+                    $route->routePath,
+                    [$controller, $method->getName()],
+                    $name
+                );
+            endforeach;
+        endforeach;
     }
 }
